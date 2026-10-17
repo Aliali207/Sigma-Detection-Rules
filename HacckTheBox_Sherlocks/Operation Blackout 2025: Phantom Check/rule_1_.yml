@@ -1,0 +1,43 @@
+title: PowerShell WMI Query for Hardware Information (VM Detection Recon)
+id: REPLACE-WITH-NEW-UUID-1
+status: experimental
+description: >
+    Detects PowerShell script blocks that query WMI hardware classes such as
+    Win32_ComputerSystem, a common first step in virtualization detection.
+references:
+    - https://attack.mitre.org/techniques/T1497/001/
+    - https://attack.mitre.org/techniques/T1047/
+author: Ali
+date: 2026/10/15
+tags:
+    - attack.discovery
+    - attack.defense-evasion
+    - attack.t1497.001
+    - attack.t1047
+logsource:
+    product: windows
+    category: ps_script
+    definition: 'Requires PowerShell Script Block Logging (4104)'
+detection:
+    selection_cmd:
+        ScriptBlockText|contains:
+            - 'Get-WmiObject'
+            - 'Get-CimInstance'
+            - 'gwmi'
+    selection_class:
+        ScriptBlockText|contains:
+            - 'Win32_ComputerSystem'
+            - 'Win32_ComputerSystemProduct'
+            - 'Win32_BIOS'
+            - 'Win32_BaseBoard'
+            - 'Win32_DiskDrive'
+    selection_prop:
+        ScriptBlockText|contains:
+            - 'Manufacturer'
+            - 'Model'
+            - 'SerialNumber'
+    condition: selection_cmd and selection_class and selection_prop
+falsepositives:
+    - Asset inventory and hardware reporting scripts
+    - Admin scripts collecting system information
+level: low
