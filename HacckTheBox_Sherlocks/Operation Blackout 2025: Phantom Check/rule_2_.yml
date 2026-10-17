@@ -1,0 +1,71 @@
+title: PowerShell Script Fingerprinting Hypervisor Artifacts (Check-VM Behavior)
+id: eec87578-6341-4fc5-b690-7ebea790ce98
+status: experimental
+description: >
+    Detects PowerShell script blocks that enumerate processes, registry keys or
+    services and compare them against hypervisor-specific artifacts of VirtualBox,
+    VMware, Hyper-V, Virtual PC, Xen or QEMU. Matches the Nishang Check-VM script.
+references:
+    - https://github.com/samratashok/nishang
+    - https://attack.mitre.org/techniques/T1497/001/
+author: ALI ABDULLA 
+date: 2026/10/15
+tags:
+    - attack.discovery
+    - attack.defense-evasion
+    - attack.t1497.001
+logsource:
+    product: windows
+    category: ps_script
+    definition: 'Requires PowerShell Script Block Logging (4104)'
+detection:
+    enum:
+        ScriptBlockText|contains:
+            - 'Get-Process'
+            - 'Get-ChildItem'
+            - 'Get-Childitem'
+            - 'Get-ItemProperty'
+            - 'reg query'
+    vendor_virtualbox:
+        ScriptBlockText|contains:
+            - 'vboxservice.exe'
+            - 'vboxtray.exe'
+            - 'vbox_'
+            - 'VBoxMouse'
+            - 'VBoxGuest'
+            - 'VBoxSF'
+    vendor_vmware:
+        ScriptBlockText|contains:
+            - 'vmwareuser.exe'
+            - 'vmwaretray.exe'
+            - 'vmmouse'
+            - 'VMTools'
+            - 'VMMEMCTL'
+            - 'vmdebug'
+    vendor_hyperv:
+        ScriptBlockText|contains:
+            - 'vmicheartbeat'
+            - 'vmicvss'
+            - 'vmicshutdown'
+            - 'vmiexchange'
+    vendor_virtualpc:
+        ScriptBlockText|contains:
+            - 'vmusrvc.exe'
+            - 'vmsrvc.exe'
+            - 'vpc-s3'
+            - 'vpcuhub'
+            - 'msvmmouf'
+    vendor_xen:
+        ScriptBlockText|contains:
+            - 'xenservice.exe'
+            - 'xenevtchn'
+            - 'xennet'
+            - 'xensvc'
+            - 'xenvdb'
+    vendor_qemu:
+        ScriptBlockText|contains: 'qemu'
+    condition: enum and 1 of vendor_*
+falsepositives:
+    - Virtualization or asset management scripts checking guest tools
+    - Security research and training labs
+level: medium
