@@ -1,1 +1,27 @@
 
+title: Kerberos TGS Request with RC4 Encryption (Potential Kerberoasting)
+id: 3f6b2a9e-5c41-4d8a-9b7e-1a2c4e6d8f10
+status: experimental
+description: |
+    Detects a Kerberos service ticket request (Event ID 4769) using RC4 encryption (0x17).
+    Kerberoasting tools request RC4 tickets because they are much faster to crack offline than AES.
+references:
+    - https://attack.mitre.org/techniques/T1558/003/
+author: ALI ABDULLA
+date: 2026/11/05
+tags:
+    - attack.credential_access
+    - attack.t1558.003
+logsource:
+    product: windows
+    service: security
+detection:
+    selection:
+        EventID: 4769
+        TicketEncryptionType: '0x17'
+    condition: selection
+falsepositives:
+    - Legacy applications or old systems that only support RC4
+    - Service accounts without AES support
+    - Requests for machine accounts and krbtgt in environments that still allow RC4
+level: low
